@@ -1,0 +1,49 @@
+component antiparallel_diodes_1n4148
+% Antiparallel 1N4148 Diode Pair
+%
+% Models a pair of antiparallel 1N4148 diodes incorporating ideality 
+% factor, series resistance, and parallel leakage.
+
+nodes
+    p = foundation.electrical.electrical; % +:top
+    n = foundation.electrical.electrical; % -:bottom
+end
+
+variables
+    i = { 0, 'A' }; % Total terminal current
+    v = { 0, 'V' }; % Terminal voltage
+    
+    % Internal branch currents for the solver
+    i_fwd = { 0, 'A' }; 
+    i_rev = { 0, 'A' }; 
+end
+
+parameters
+    Is  = { 2.52e-9,  'A'   }; % Saturation current
+    Rs  = { 0.568,    'Ohm' }; % Series resistance
+    eta = { 1.752,    '1'   }; % Ideality factor
+    Vt  = { 25.85e-3, 'V'   }; % Thermal voltage (~300K)
+    Rp  = { 1e8,      'Ohm' }; % Parallel leakage resistance
+end
+
+
+branches
+    i : p.i -> n.i; % Corrected: Explicitly routes the 'i' through-variable
+end
+
+equations
+    % 1. Terminal Voltage
+    v == p.v - n.v;
+
+    % 2. Forward Diode (Driven by +v)
+    % Standard implicit Shockley equation + parallel leakage
+    i_fwd == Is * (exp((v - i_fwd * Rs) / (eta * Vt)) - 1) + (v - i_fwd * Rs) / Rp;
+
+    % 3. Reverse Diode (Driven by -v)
+    i_rev == Is * (exp((-v - i_rev * Rs) / (eta * Vt)) - 1) + (-v - i_rev * Rs) / Rp;
+
+    % 4. Total Current KCL
+    i == i_fwd - i_rev;
+end
+
+end
