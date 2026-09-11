@@ -6,7 +6,7 @@ from MLP import MLP2x16
 
 def Solver(Vin, t, gain):
 
-    net = MLP2x16()  
+    model = MLP2x16("mlp_2x16.pth")  
     fs = 1/(t[1]-t[0])
     V_dd = 9
 
@@ -60,10 +60,12 @@ def Solver(Vin, t, gain):
 
     S_sol = sm.eye(ports) - 2 * Z_sol * Lambda_sol
 
-    S_loc = S_sol[0:nl_ports,:]
+    S_loc = np.asarray(S_sol[0:nl_ports,:])
+    S_sol = np.asarray(S_sol)
 
     Vout = np.zeros(len(t), dtype=float)
-    a = scipy.io.loadmat("a_init_vals.mat")["a"]
+    a = np.asarray(scipy.io.loadmat("a_init_vals.mat")["a"],dtype=float,).reshape(-1)
+
 
     b = np.zeros(ports, dtype=float)
 
@@ -71,9 +73,8 @@ def Solver(Vin, t, gain):
       b[[7, 10]] = [V_dd,Vin[i]]
 
       a[:nl_ports] = S_loc @ b
-
-      b[0] = net(torch.tensor(a))
-
+      with torch.no_grad():
+        b[0] = model(torch.tensor([[float(a[0])]])).item()
       a = S_sol @ b
 
       Vout[i] = (a[1] + b[1]) / 2.0
