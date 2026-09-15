@@ -12,6 +12,7 @@ class MLP2x16(nn.Module):
             nn.ReLU(),
             nn.Linear(16, 1)    # hidden2: 16 -> output: 1
         )
+        self.to(torch.float64)
         if weight_path is not None:
             checkpoint = torch.load(
                 weight_path,

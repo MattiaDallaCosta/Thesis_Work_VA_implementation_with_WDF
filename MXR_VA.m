@@ -8,7 +8,7 @@ fs = 96e3; % sampling frequency
 StopTime = .1;
 t = 0:1/fs:StopTime; % time axis
 
-amp = .1;
+amp = .5;
 f = 5e1;
 Vin = amp*sin(2*pi*f*t);
 

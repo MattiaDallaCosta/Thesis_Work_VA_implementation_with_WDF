@@ -64,7 +64,7 @@ def Solver(Vin, t, gain):
     S_sol = np.asarray(S_sol)
 
     Vout = np.zeros(len(t), dtype=float)
-    a = np.asarray(scipy.io.loadmat("a_init_vals.mat")["a"],dtype=float,).reshape(-1)
+    a = np.asarray(scipy.io.loadmat("a_init_vals.mat")["a"],dtype=np.float64,).reshape(-1)
 
 
     b = np.zeros(ports, dtype=float)
@@ -74,7 +74,7 @@ def Solver(Vin, t, gain):
 
       a[:nl_ports] = S_loc @ b
       with torch.no_grad():
-        b[0] = model(torch.tensor([[float(a[0])]])).item()
+        b[0] = model(torch.tensor([[np.float64(a[0])]])).item()
       a = S_sol @ b
 
       Vout[i] = (a[1] + b[1]) / 2.0

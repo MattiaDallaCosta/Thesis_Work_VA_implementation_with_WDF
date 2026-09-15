@@ -6,8 +6,8 @@ close all
 
 StopTime = 1;
 
-Vmin = -4.5;
-Vmax = 4.5;
+Vmin = -.85;
+Vmax = .85;
 
 Z = load("Z.mat").Z_sol(1,1);
 
@@ -29,10 +29,12 @@ end
 sim_out = sim(model_name,"StartTime", "0", "StopTime", num2str(StopTime)); 
 
 I_out = sim_out.i_out.';
+%V_out = sim_out.v_out.';
 
 %% dataset generation
 
 dataset = [(V_in + Z*I_out); (V_in - Z*I_out)].';
+% dataset = [(V_out + Z*I_out); (V_out - Z*I_out)].';
 
 % Create a random permutation of row indices
 p = randperm(size(dataset,1));

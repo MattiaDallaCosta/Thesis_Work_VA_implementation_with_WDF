@@ -8,7 +8,7 @@ from solver import Solver
 fs = 96000
 StopTime = 0.1
 t = np.append(np.arange(0,StopTime,1/fs), StopTime)
-amp = .1
+amp = .5
 f = 50
 Vin = amp * np.sin(2*math.pi*f*t)
 

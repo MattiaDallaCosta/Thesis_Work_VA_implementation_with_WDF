@@ -18,8 +18,8 @@ data_etest = dataset[train_size:train_size + etest_size]
 data_test = dataset[train_size + etest_size:]
 
 def make_tensors(data):
-    X = torch.from_numpy(np.asarray(data[:,0], dtype=np.float32)).reshape(-1,1)
-    Y = torch.from_numpy(np.asarray(data[:,1], dtype=np.float32)).reshape(-1,1)
+    X = torch.from_numpy(np.asarray(data[:,0], dtype=np.float64)).reshape(-1,1)
+    Y = torch.from_numpy(np.asarray(data[:,1], dtype=np.float64)).reshape(-1,1)
     return X,Y
 
 
@@ -41,12 +41,11 @@ model = MLP2x16()
 criterion = nn.MSELoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-2)
 
-
 # --------------------------------------------------
 # Training and evaluation
 # --------------------------------------------------
 
-num_epochs = 1000
+num_epochs = 600
 
 train_losses = []
 etest_losses = []
@@ -139,4 +138,39 @@ plt.xlabel("Epoch")
 plt.ylabel("MSE loss")
 plt.grid(True)
 plt.legend()
+plt.show()
+
+
+Z = scipy.io.loadmat("Z.mat")["Z_sol"]
+Z = Z[0,0]
+
+V_true = 0.5 * (X_test + Y_test)
+V_pred = 0.5 * (X_test + test_preds)
+
+# Calculate Current: I = 0.5 * (a - b) / Z
+I_true = 0.5 * (X_test - Y_test) / Z
+I_pred = 0.5 * (X_test - test_preds) / Z
+
+
+fig, (ax1, ax2) = plt.subplots(
+    1, 2,
+    figsize=(12, 5),
+)
+ax1.scatter(X_test, Y_test, s=.5, label="true")
+ax1.scatter(X_test, test_preds, s=.5, label="predicted")
+ax1.set_title("a and b")
+ax1.set_xlabel("a")
+ax1.set_ylabel("b")
+ax1.legend()
+ax1.grid(True)
+
+ax2.scatter(V_true, I_true, s=.5, label="true")
+ax2.scatter(V_pred, I_pred, s=.5, label="predicted")
+ax2.set_title("V/I curve")
+ax2.set_xlabel("V (V)")
+ax2.set_ylabel("I (A)")
+ax2.legend()
+ax2.grid(True)
+
+fig.tight_layout()
 plt.show()
