@@ -39,13 +39,13 @@ print("Test:", X_test.shape, Y_test.shape)
 
 model = MLP2x16()
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=1e-2)
+optimizer = optim.Adam(model.parameters(), lr=7e-3)
 
 # --------------------------------------------------
 # Training and evaluation
 # --------------------------------------------------
 
-num_epochs = 600
+num_epochs = 3000
 
 train_losses = []
 etest_losses = []
