@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import scipy
 import numpy as np
+from torch.utils.data import TensorDataset, DataLoader
 
 from MLP import MLP2x16  # your model class in a separate file
 
@@ -31,6 +32,14 @@ print("Training:", X_train.shape, Y_train.shape)
 print("Evaluation:", X_etest.shape, Y_etest.shape)
 print("Test:", X_test.shape, Y_test.shape)
 
+train_dataset = TensorDataset(X_train, Y_train)
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=256,
+    shuffle=True,
+)
+
+
 #definition of neural net
 
 # --------------------------------------------------
@@ -39,13 +48,22 @@ print("Test:", X_test.shape, Y_test.shape)
 
 model = MLP2x16()
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=7e-3)
+optimizer = optim.Adam(model.parameters(), lr=5e-4)
+
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=350, gamma=0.8)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer,
+    mode="min",
+    factor=0.47,
+    patience=7,
+    min_lr=1e-8,
+)
 
 # --------------------------------------------------
 # Training and evaluation
 # --------------------------------------------------
 
-num_epochs = 3000
+num_epochs = 600
 
 train_losses = []
 etest_losses = []
@@ -58,13 +76,20 @@ for epoch in range(num_epochs):
     # Training mode
     model.train()
 
-    optimizer.zero_grad()
+    epoch_loss = 0.0
+    for X_batch, Y_batch in train_loader:
+        optimizer.zero_grad()
 
-    train_preds = model(X_train)
-    train_loss = criterion(train_preds, Y_train)
+        train_preds = model(X_batch)
+        train_loss = criterion(train_preds, Y_batch)
 
-    train_loss.backward()
-    optimizer.step()
+        train_loss.backward()
+        optimizer.step()
+        epoch_loss += train_loss.item() * X_batch.size(0)
+
+    epoch_loss /= len(train_loader.dataset)
+
+    # scheduler.step()
 
     # Evaluation mode
     model.eval()
@@ -73,7 +98,7 @@ for epoch in range(num_epochs):
         etest_preds = model(X_etest)
         etest_loss = criterion(etest_preds, Y_etest)
 
-    train_loss_value = train_loss.item()
+    train_loss_value = epoch_loss #.item()
     etest_loss_value = etest_loss.item()
 
     if etest_loss.item() < best_etest_loss:
@@ -82,6 +107,7 @@ for epoch in range(num_epochs):
             key: value.detach().clone()
             for key, value in model.state_dict().items()
         }
+    scheduler.step(etest_loss)
 
     train_losses.append(train_loss_value)
     etest_losses.append(etest_loss_value)

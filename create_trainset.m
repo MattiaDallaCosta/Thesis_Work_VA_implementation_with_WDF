@@ -13,9 +13,24 @@ Z = load("Z.mat").Z_sol(1,1);
 
 fs = 96000;
 
-t = 0:1/fs:StopTime;
+low_res_fs = 2e4;
+high_res_fs = 7e5;
 
-V_in = (0:1/(length(t)-1):1) *(abs(Vmin)+Vmax) + Vmin;
+t_check = 0:1/fs:StopTime;
+
+V_in_check = (0:1/(length(t_check)-1):1) *(abs(Vmin)+Vmax) + Vmin;
+
+search_vals = [-0.8,-0.5,0.5,0.8];
+
+[~, idx] = min(abs(V_in_check - search_vals.'),[],2);
+
+t_val = t_check(idx);
+
+t = [0:1/low_res_fs:t_val(1) - 1/low_res_fs, t_val(1):1/high_res_fs:t_val(2) - 1/high_res_fs, t_val(2):1/low_res_fs:t_val(3) - 1/low_res_fs, t_val(3):1/high_res_fs:t_val(4) - 1/high_res_fs, t_val(4):1/low_res_fs:StopTime, StopTime];
+V_in = (t/StopTime) *(abs(Vmin)+Vmax) + Vmin;
+
+% t = t_check;
+% V_in = V_in_check;
 
 %% Simulation
 
@@ -26,9 +41,17 @@ if ~bdIsLoaded(model_name)
     load_system(model_name);
 end   
 
-sim_out = sim(model_name,"StartTime", "0", "StopTime", num2str(StopTime)); 
+set_param(model_name, ...
+    "StartTime", "0", ...
+    "StopTime", num2str(StopTime), ...
+    "SolverType", "Variable-step", ...
+    "OutputOption", "SpecifiedOutputTimes", ...
+    "OutputTimes", mat2str(t.'));
+
+sim_out = sim(model_name); 
 
 I_out = sim_out.i_out.';
+t_out = sim_out.tout.';
 %V_out = sim_out.v_out.';
 
 %% dataset generation

@@ -6,18 +6,31 @@ close all
 
 StopTime = 1;
 
-Vmin = -4.5;
-Vmax = 4.5;
+Vmin = -.85;
+Vmax = .85;
+
+Z = load("Z.mat").Z_sol(1,1);
 
 fs = 96000;
+
+low_res_fs = 10e3;
+high_res_fs = 10e5;
 
 t = 0:1/fs:StopTime;
 
 V_in = (0:1/(length(t)-1):1) *(abs(Vmin)+Vmax) + Vmin;
 
+search_vals = [-0.7,-0.5,0.5,0.7];
+
+[~, idx] = min(abs(V_in - search_vals.'),[],2);
+
+t_val = t(idx);
+
+t = [0:1/low_res_fs:t_val(1) - 1/low_res_fs, t_val(1):1/high_res_fs:t_val(2) - 1/high_res_fs, t_val(2):1/low_res_fs:t_val(3) - 1/low_res_fs, t_val(1):1/high_res_fs:t_val(2) - 1/high_res_fs, t_val(1):1/high_res_fs:StopTime]
+
 %% Simulation
 
-Vin_sim = [V_in.',t.'];
+Vin_sim = [t.',V_in.'];
 
 model_name = 'va_circuit';  % your .slx model name (no extension)
 if ~bdIsLoaded(model_name)
@@ -26,10 +39,18 @@ end
 
 sim_out = sim(model_name,"StartTime", "0", "StopTime", num2str(StopTime)); 
 
-I_out = sim_out.i_out;
+I_out = sim_out.i_out.';
+%V_out = sim_out.v_out.';
 
 %% dataset generation
 
-dataset = zeros(size(Vin_sim.'));
+dataset = [(V_in + Z*I_out); (V_in - Z*I_out)].';
+% dataset = [(V_out + Z*I_out); (V_out - Z*I_out)].';
 
-dataset(1,:) = 
+% Create a random permutation of row indices
+p = randperm(size(dataset,1));
+
+% Shuffle the rows (i.e., the couples)
+data_shuffled = dataset(p, :);
+
+save("dataset.mat", "data_shuffled");

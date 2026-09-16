@@ -7,9 +7,11 @@ class MLP2x16(nn.Module):
         super().__init__()
         self.net = nn.Sequential(
             nn.Linear(1, 16),   # input: 1 -> hidden1: 16
-            nn.ReLU(),          # or nn.Tanh(), nn.GELU(), etc.
+            #nn.ReLU(),          # or nn.Tanh(), nn.GELU(), etc.
+            nn.GELU(),          # or nn.Tanh(), nn.GELU(), etc.
             nn.Linear(16, 16),  # hidden1: 16 -> hidden2: 16
-            nn.ReLU(),
+            #nn.ReLU(),
+            nn.GELU(),
             nn.Linear(16, 1)    # hidden2: 16 -> output: 1
         )
         self.to(torch.float64)

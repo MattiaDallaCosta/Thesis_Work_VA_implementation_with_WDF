@@ -1,0 +1,34 @@
+component bjtext_diode
+
+inputs
+    i_in = { 0, 'A' }; % i_in:bottom
+    v_in = { 0, 'V' }; % v_in:bottom
+end
+
+parameters
+    Is = {3.9396e-14, 'A'};
+    Rs = {1e-5, 'V/A'};
+    eta = {1, '1'};
+    Vt = {25.8e-3, 'V'};
+end
+
+nodes
+    head = foundation.electrical.electrical; % -:bottom
+    tail = foundation.electrical.electrical; % +:top
+end
+
+variables(Access=private)
+    i = { 0, 'A' };
+    v = { 0, 'V' };
+end
+
+branches
+    i : tail.i -> head.i;
+end
+
+equations
+    v == tail.v - head.v;
+    i == Is*(exp((v_in-Rs*i_in)/(eta*Vt))-1);
+end
+
+end
