@@ -1,0 +1,30 @@
+component bjtext_ialpha
+
+inputs
+    i_in = { 0, 'A' }; % i_in:bottom
+end
+
+parameters
+    alpha = {0.8899, '1'};
+end
+
+nodes
+    head = foundation.electrical.electrical; % -:bottom
+    tail = foundation.electrical.electrical; % +:top
+end
+
+variables(Access=private)
+    i = { 0, 'A' };
+    v = { 0, 'V' };
+end
+
+branches
+    i : tail.i -> head.i;
+end
+
+equations
+    v == tail.v - head.v;
+    i == i_in*alpha;
+end
+
+end

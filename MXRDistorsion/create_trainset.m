@@ -20,7 +20,7 @@ t_check = 0:1/fs:StopTime;
 
 V_in_check = (0:1/(length(t_check)-1):1) *(abs(Vmin)+Vmax) + Vmin;
 
-search_vals = [-0.8,-0.5,0.5,0.8];
+search_vals = [-0.8,-0.3,0.3,0.8];
 
 [~, idx] = min(abs(V_in_check - search_vals.'),[],2);
 
@@ -31,6 +31,27 @@ V_in = (t/StopTime) *(abs(Vmin)+Vmax) + Vmin;
 
 % t = t_check;
 % V_in = V_in_check;
+
+Vin_sim = [t_check.',V_in_check.'];
+
+model_name = 'va_circuit';  % your .slx model name (no extension)
+if ~bdIsLoaded(model_name)
+    load_system(model_name);
+end   
+
+set_param(model_name, ...
+    "StartTime", "0", ...
+    "StopTime", num2str(StopTime), ...
+    "SolverType", "Variable-step", ...
+    "OutputOption", "SpecifiedOutputTimes", ...
+    "OutputTimes", mat2str(t_check.'));
+
+sim_out = sim(model_name); 
+
+I_out_check = sim_out.i_out.';
+
+I_d = diff(I_out_check)*fs;
+I_dd = diff(I_d)*fs;
 
 %% Simulation
 
@@ -51,7 +72,6 @@ set_param(model_name, ...
 sim_out = sim(model_name); 
 
 I_out = sim_out.i_out.';
-t_out = sim_out.tout.';
 %V_out = sim_out.v_out.';
 
 %% dataset generation

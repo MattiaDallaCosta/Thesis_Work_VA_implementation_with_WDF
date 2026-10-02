@@ -6,7 +6,7 @@ from MLP import MLP2x16
 
 def Solver(Vin, t, gain):
 
-    model = MLP2x16("mlp_2x16.pth")  
+    model = MLP2x16("mlp_2x16_5_2e-5.pth")  
     fs = 1/(t[1]-t[0])
     V_dd = 9
 

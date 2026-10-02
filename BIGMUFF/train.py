@@ -4,6 +4,7 @@ import torch.optim as optim
 import scipy
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader
+import matplotlib.pyplot as plt
 
 from MLP import MLP2x16  # your model class in a separate file
 
@@ -28,14 +29,14 @@ X_train, Y_train = make_tensors(data_train)
 X_etest, Y_etest = make_tensors(data_etest)
 X_test, Y_test = make_tensors(data_test)
 
-print("Training:", X_train.shape, Y_train.shape)
-print("Evaluation:", X_etest.shape, Y_etest.shape)
-print("Test:", X_test.shape, Y_test.shape)
+print("Training:", X_train.shape[0])
+print("Evaluation:", X_etest.shape[0])
+print("Test:", X_test.shape[0])
 
 train_dataset = TensorDataset(X_train, Y_train)
 train_loader = DataLoader(
     train_dataset,
-    batch_size=256,
+    batch_size=124,
     shuffle=True,
 )
 
@@ -48,14 +49,14 @@ train_loader = DataLoader(
 
 model = MLP2x16()
 criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=5e-4)
+optimizer = optim.Adam(model.parameters(), lr=9e-5)
 
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=350, gamma=0.8)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode="min",
-    factor=0.47,
-    patience=7,
+    factor=0.94,
+    patience=2,
     min_lr=1e-8,
 )
 
@@ -63,7 +64,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
 # Training and evaluation
 # --------------------------------------------------
 
-num_epochs = 600
+num_epochs = 350
 
 train_losses = []
 etest_losses = []
@@ -114,7 +115,7 @@ for epoch in range(num_epochs):
 
     if epoch % 10 == 0 or epoch == num_epochs - 1:
         print(
-            f"Epoch {epoch + 1:4d}/{num_epochs} | "
+            f"Epoch {epoch:4d}/{num_epochs} | "
             f"train loss: {train_loss_value:.6e} | "
             f"etest loss: {etest_loss_value:.6e}"
         )
@@ -156,7 +157,6 @@ torch.save(
     "mlp_2x16.pth",
 )
 
-import matplotlib.pyplot as plt
 
 plt.semilogy(train_losses, label="training")
 plt.semilogy(etest_losses, label="evaluation")
