@@ -1,1 +1,4 @@
-# MXRDistorsion_VA_reconstruction_with_WDF
+# Thesis_Work_VA_implementation_with_WDF
+Implemented circuits:
+-MXR Distorsion +
+-BIGMUFF(WIP) 
