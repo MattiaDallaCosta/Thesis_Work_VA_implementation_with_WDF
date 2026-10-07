@@ -19,11 +19,16 @@ n_points = 256;
 Vbc_ramp = linspace(-10, 2, n_points);
 Vbe = [t', linspace(0, 1.5, length(t))' .* sin(2*pi*f0*t')];
 
+model_name = 'EbersMollBJTModel_ssc';  % your .slx model name (no extension)
+if ~bdIsLoaded(model_name)
+    load_system(model_name);
+end   
+
 for i = 1:n_points
     Vbc = [t', repelem(Vbc_ramp(i), length(t))'];
     
     % Simulate the circuit with the defined Vbc and Vbe
-    simOut = sim("EbersMollBJTModel_ssc");
+    simOut = sim(model_name);
 
     % Collect Simulation Data
     t_sim = simOut.tout;
