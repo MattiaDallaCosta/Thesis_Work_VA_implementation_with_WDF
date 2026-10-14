@@ -10,7 +10,7 @@ from MLP import MLP2x16  # your model class in a separate file
 
 # loading dividing and preparing dataset
 
-dataset = scipy.io.loadmat("dataset.mat")["data_shuffled"]
+dataset = scipy.io.loadmat("dataset.mat")["dataset"]
 
 train_size = round(7*dataset.shape[0]/10)
 etest_size = round(2*dataset.shape[0]/10)
