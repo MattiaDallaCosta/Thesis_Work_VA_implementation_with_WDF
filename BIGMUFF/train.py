@@ -10,7 +10,9 @@ from MLP import MLP2x16  # your model class in a separate file
 
 # loading dividing and preparing dataset
 
-dataset = scipy.io.loadmat("dataset.mat")["dataset"]
+dataset = scipy.io.loadmat("EbersMollBJTDatasetGenerator/dataset.mat")["dataset"]
+
+print("dataset:", dataset.shape)
 
 train_size = round(7*dataset.shape[0]/10)
 etest_size = round(2*dataset.shape[0]/10)
@@ -20,8 +22,8 @@ data_etest = dataset[train_size:train_size + etest_size]
 data_test = dataset[train_size + etest_size:]
 
 def make_tensors(data):
-    X = torch.from_numpy(np.asarray(data[:,0], dtype=np.float64)).reshape(-1,1)
-    Y = torch.from_numpy(np.asarray(data[:,1], dtype=np.float64)).reshape(-1,1)
+    X = torch.from_numpy(np.asarray(data[:,0:2], dtype=np.float64)).reshape(-1,2)
+    Y = torch.from_numpy(np.asarray(data[:,2:4], dtype=np.float64)).reshape(-1,2)
     return X,Y
 
 
@@ -29,14 +31,14 @@ X_train, Y_train = make_tensors(data_train)
 X_etest, Y_etest = make_tensors(data_etest)
 X_test, Y_test = make_tensors(data_test)
 
-print("Training:", X_train.shape[0])
-print("Evaluation:", X_etest.shape[0])
-print("Test:", X_test.shape[0])
+print("Training:", X_train.shape)
+print("Evaluation:", X_etest.shape)
+print("Test:", X_test.shape)
 
 train_dataset = TensorDataset(X_train, Y_train)
 train_loader = DataLoader(
     train_dataset,
-    batch_size=124,
+    batch_size=128,
     shuffle=True,
 )
 
@@ -55,7 +57,7 @@ optimizer = optim.Adam(model.parameters(), lr=9e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode="min",
-    factor=0.94,
+    factor=0.9,
     patience=2,
     min_lr=1e-8,
 )
@@ -164,39 +166,4 @@ plt.xlabel("Epoch")
 plt.ylabel("MSE loss")
 plt.grid(True)
 plt.legend()
-plt.show()
-
-
-Z = scipy.io.loadmat("Z.mat")["Z_sol"]
-Z = Z[0,0]
-
-V_true = 0.5 * (X_test + Y_test)
-V_pred = 0.5 * (X_test + test_preds)
-
-# Calculate Current: I = 0.5 * (a - b) / Z
-I_true = 0.5 * (X_test - Y_test) / Z
-I_pred = 0.5 * (X_test - test_preds) / Z
-
-
-fig, (ax1, ax2) = plt.subplots(
-    1, 2,
-    figsize=(12, 5),
-)
-ax1.scatter(X_test, Y_test, s=.5, label="true")
-ax1.scatter(X_test, test_preds, s=.5, label="predicted")
-ax1.set_title("a and b")
-ax1.set_xlabel("a")
-ax1.set_ylabel("b")
-ax1.legend()
-ax1.grid(True)
-
-ax2.scatter(V_true, I_true, s=.5, label="true")
-ax2.scatter(V_pred, I_pred, s=.5, label="predicted")
-ax2.set_title("V/I curve")
-ax2.set_xlabel("V (V)")
-ax2.set_ylabel("I (A)")
-ax2.legend()
-ax2.grid(True)
-
-fig.tight_layout()
 plt.show()

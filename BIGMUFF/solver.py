@@ -6,30 +6,36 @@ from MLP import MLP2x16
 
 def Solver(Vin, t):
 
-    model = MLP2x16("mlp_2x16.pth")  
+    model = MLP2x16("mlp_2x16_best.pth")  
     fs = 1/(t[1]-t[0])
     V_dd = 9
 
     S_sol = scipy.io.loadmat('Scatter.mat')['S_sol']
     S_loc = scipy.io.loadmat('Scatter.mat')['S_loc']
-    nl_ports = scipy.io.loadmat('Scatter.mat')['nl_ports']
+    nl_ports = int(np.asarray(scipy.io.loadmat('Scatter.mat')['nl_ports']).item())
 
     ports = S_sol.shape[0]
 
     Vout = np.zeros(len(t), dtype=np.float64)
-    #a = np.asarray(scipy.io.loadmat("a_init_vals.mat")["a"],dtype=np.float64).reshape(-1)
+    a = np.asarray(scipy.io.loadmat("a_init_vals.mat")["a"],dtype=np.float64).reshape(-1)
     b = np.zeros(ports, dtype=np.float64)
-    a = np.zeros(ports, dtype=np.float64)
+    # a = np.zeros(ports, dtype=np.float64)
 
     for i in range(len(t)):
-      b[[4, 10]] = [Vin[i], V_dd/2]
-      b[[0,3,8]] = a[[0,3,8]]; 
+      b[[4, 7]] = [Vin[i], V_dd/2]
+      b[[8,9,10]] = a[[8,9,10]]; 
 
       a[:nl_ports] = S_loc @ b
       with torch.no_grad():
-        b[0] = model(torch.tensor([[np.float64(a[0])]])).item()
+        b[0:2] = model(torch.tensor([[np.float64(a[0]), np.float64(a[1])]])).squeeze(0)
 
       a = S_sol @ b
-      Vout[i] = (a[1] + b[1]) / 2.0
+      Vout[i] = (a[3] + b[3]) / 2.0
 
+    # scipy.io.savemat(
+    #     "a_init_vals.mat",
+    #     {
+    #         "a": a,
+    #     }
+    # )
     return Vout
