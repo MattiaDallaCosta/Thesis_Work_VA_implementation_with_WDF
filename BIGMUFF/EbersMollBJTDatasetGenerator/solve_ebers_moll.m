@@ -9,7 +9,7 @@ function [i1, i2] = solve_ebers_moll(v1, v2)
     alpha_f = 0.9993;
     alpha_r = 0.5579;
     Rs1 = 1e-5; Rs2 = 1e-5;
-    Rp1 = 1e-5;  Rp2 = 1e-5;
+    Rp1 = 1e11;  Rp2 = 1e8;
     eta_f = 1;  eta_r = 1;
     Is1 = 5.9151e-15;  Is2 = 10.595e-15;
 

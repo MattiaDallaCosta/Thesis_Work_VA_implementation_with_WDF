@@ -6,7 +6,7 @@ from MLP import MLP2x16
 
 def Solver(Vin, t):
 
-    model = MLP2x16("mlp_2x16_best.pth")  
+    model = MLP2x16("mlp_2x16.pth")  
     fs = 1/(t[1]-t[0])
     V_dd = 9
 
@@ -23,15 +23,16 @@ def Solver(Vin, t):
 
     for i in range(len(t)):
       print(t[i], end='\r')
-      b[[6, 8]] = [V_dd, Vin[i]]
-      b[[4,5,7]] = a[[4,5,7]]; 
+      b[[4, 7]] = [Vin[i], V_dd]
+      b[[8,9,10]] = a[[8,9,10]]; 
 
       a[:nl_ports] = S_loc @ b
       with torch.no_grad():
         b[0:2] = model(torch.tensor([[np.float64(a[0]), np.float64(a[1])]])).squeeze(0)
 
       a = S_sol @ b
-      Vout[i] = (a[10] + b[10]) / 2.0
+      # print(a[3], b[3])
+      Vout[i] = (a[3] + b[3]) / 2.0
 
     # scipy.io.savemat(
     #     "a_init_vals.mat",
@@ -59,16 +60,16 @@ def Solver_R(Vin, t):
 
     for i in range(len(t)):
       print(t[i], end='\r')
-      b[[6, 8]] = [V_dd, Vin[i]]
-      b[[4,5,7]] = a[[4,5,7]]; 
+      b[[4, 7]] = [Vin[i], V_dd]
+      b[[8,9,10]] = a[[8,9,10]]; 
 
       a = S_sol @ b
-      Vout[i] = (a[10] + b[10]) / 2.0
+      Vout[i] = (a[3] + b[3]) / 2.0
 
-    #  scipy.io.savemat(
-    #      "a_init_vals_r.mat",
-    #      {
-    #          "a": a,
-    #      }
-    #  )
+    # scipy.io.savemat(
+    #     "a_init_vals_r.mat",
+    #     {
+    #         "a": a,
+    #     }
+    # )
     return Vout

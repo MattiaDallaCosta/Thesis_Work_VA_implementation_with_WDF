@@ -5,43 +5,32 @@ clc
 %%
 fs = 96000;
 
-R = [39,47,470,10,1e-1,1]*1e3; % Resistance values as ordered in the circuit
+R = [39,47,470,10,1e-1,101]*1e3; % Resistance values as ordered in the circuit
 
 C = [1e6,470,1e6]*1e-12; % Capacitance values as ordered in the circuit
 
 Z_C = (1/fs)./(2.*C); % Reference Resistance for capacitors
 
 %    BC BE R5 Ro R1 R2 R3 R4 C1 C2 C3
-Q = [1, 0, 0, 0, 0, 0, 1,-1, 0, 1,-1;   % BC
+Q = [1, 0, 0, 0, 0, 0,-1, 1, 0,-1, 1;   % BC
      0, 1, 0, 0, 0,-1, 0,-1,-1, 0,-1;   % BE
      0, 0, 1, 0, 0,-1, 0,-1,-1, 0,-1;   % R5
      0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1;   % Ro
      0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0];  % R1
 
-%    BC BE R5 Ro R1 R2 R3 R4 C1 C2 C3
-B = [1, 0, 0, 0, 0, 0, 0, 1,-1, 1, 0;   % BC
-     0, 1, 0, 0, 0, 0, 1, 1,-1, 0, 0;   % BE
-     0, 0, 1, 0, 0, 0, 0, 1,-1, 0, 0;   % R5
-     0, 0, 0, 1, 0, 0,-1,-1, 1, 0, 0;   % Ro
-     0, 0, 0, 0, 1, 0,-1,-1, 1, 0, 0;   % R1
-     0, 0, 0, 0, 0, 1,-1, 0, 0, 0, 1];  % R1
-
 ports = length(Q);
 nl_ports = 2;
 
 Z_d = [nan(1,nl_ports), R([5,6,1,2,3,4]), Z_C];
-Z_d_2 = [nan(1,nl_ports), R([2,3]), Z_C([2,3]),R(4),C(1),R([1,5,6])];
 
 Z = sym(diag(Z_d));
-Z_2 = sym(diag(Z_d_2));
 
 Zsym = sym('z',[nl_ports nl_ports],'real');
 
 Z(1:nl_ports,1:nl_ports) = Zsym;
 Z_2(1:nl_ports,1:nl_ports) = Zsym;
 
-% S = 2* Q.' * inv(Q*inv(Z)*Q.') * Q * inv(Z) - eye(ports);
-S = eye(ports) - 2* Z_2*B.' * inv(B*Z_2*B.') * B;
+S = 2* Q.' * inv(Q*inv(Z)*Q.') * Q * inv(Z) - eye(ports);
 
 sol = solve(S(1:nl_ports,1:nl_ports) == 0, Zsym(:));
 
@@ -60,12 +49,10 @@ end
 % reshape
 z_vals = reshape(vals_num, size(Zsym));
 
-% Z_sol = diag(Z_d);
-Z_sol = diag(Z_d_2);
+Z_sol = diag(Z_d);
 Z_sol(1:nl_ports,1:nl_ports) = z_vals;
 
-% S_sol = 2* Q.' * inv(Q*inv(Z_sol)*Q.') * Q * inv(Z_sol) - eye(ports);
-S_sol = eye(ports) - 2* Z_sol*B.' * inv(B*Z_sol*B.') * B;
+S_sol = 2* Q.' * inv(Q*inv(Z_sol)*Q.') * Q * inv(Z_sol) - eye(ports);
 
 S_loc = S_sol(1:nl_ports,:);
 

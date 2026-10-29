@@ -1,3 +1,4 @@
+from scipy.constants import epsilon_0
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -7,6 +8,18 @@ from torch.utils.data import TensorDataset, DataLoader
 import matplotlib.pyplot as plt
 
 from MLP import MLP2x16  # your model class in a separate file
+
+class NMSELoss(nn.Module):
+    def __init__(self, epsilon=1e-8):
+        super(NMSELoss, self).__init__()
+        self.epsilon = epsilon
+    
+    def forward(self, b_pred, b_true):
+        mse = torch.sum((b_true - b_pred) ** 2, dim = 0)
+        norm = torch.norm(b_true ** 2, dim = 0)
+        nmse = torch.sum(mse/(norm + self.epsilon))
+
+        return nmse
 
 # loading dividing and preparing dataset
 
@@ -50,14 +63,14 @@ train_loader = DataLoader(
 # --------------------------------------------------
 
 model = MLP2x16()
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=9e-5)
+criterion = NMSELoss()
+optimizer = optim.Adam(model.parameters(), lr=9e-4)
 
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=350, gamma=0.8)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode="min",
-    factor=0.98,
+    factor=0.7,
     patience=2,
     min_lr=1e-8,
 )
@@ -66,7 +79,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
 # Training and evaluation
 # --------------------------------------------------
 
-num_epochs = 350
+num_epochs = 150
 
 train_losses = []
 etest_losses = []

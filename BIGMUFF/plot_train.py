@@ -10,7 +10,7 @@ from MLP import MLP2x16  # your model class in a separate file
 # Final test evaluation
 # --------------------------------------------------
 
-model = MLP2x16("mlp_2x16_best.pth") 
+model = MLP2x16("mlp_2x16.pth") 
 
 dataset = scipy.io.loadmat("EbersMollBJTDatasetGenerator/dataset.mat")["dataset"]
 
