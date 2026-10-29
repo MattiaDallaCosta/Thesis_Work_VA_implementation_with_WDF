@@ -57,7 +57,7 @@ optimizer = optim.Adam(model.parameters(), lr=9e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode="min",
-    factor=0.9,
+    factor=0.98,
     patience=2,
     min_lr=1e-8,
 )

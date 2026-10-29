@@ -8,7 +8,7 @@ stop_time = 1;
 
 Vbe_low_points = 1000;
 Vbe_high_points = 400;
-Vbc_points = 800;
+Vbc_points = 1000;
 
 %t = 0:1/(n_points-1):1;
 
